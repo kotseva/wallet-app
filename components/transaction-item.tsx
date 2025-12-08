@@ -10,9 +10,10 @@ interface TransactionItemProps {
     currencyId: number;
     type: TransactionType;
     onPress?: () => void;
+    isLast?: boolean;
 }
 
-export function TransactionItem({ reason, createdAt, amount, currencyId, type, onPress }: TransactionItemProps) {
+export function TransactionItem({ reason, createdAt, amount, currencyId, type, onPress, isLast = false }: TransactionItemProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
@@ -41,6 +42,7 @@ export function TransactionItem({ reason, createdAt, amount, currencyId, type, o
       <Text style={[styles.amount, type === 'top-up' && styles.amountPositive]}>
         {formatAmount()}
       </Text>
+      {!isLast && <View style={styles.divider} />}
     </View>
   );
 
@@ -60,11 +62,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: BrandColors.surface,
-    borderRadius: 8,
-    marginBottom: 5,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    position: 'relative',
   },
   left: {
     flexDirection: 'row',
@@ -72,20 +72,29 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: BrandColors.textSecondary,
+    fontWeight: '500',
+    color: '#FFFFFF',
+    maxWidth: 180,
   },
   date: {
-    fontSize: 12,
-    color: BrandColors.textSecondary,
-    marginTop: 2,
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginTop: 4,
   },
   amount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: BrandColors.textPrimary,
+    fontWeight: '500',
+    color: '#FFFFFF',
   },
   amountPositive: {
     color: BrandColors.success,
+  },
+  divider: {
+    position: 'absolute',
+    bottom: 0,
+    left: 16,
+    right: 16,
+    height: 1,
+    backgroundColor: '#27272A',
   },
 });

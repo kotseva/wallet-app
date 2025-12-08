@@ -82,7 +82,7 @@ export default function HomeScreen() {
           {transactionsLoading && !displayedTransactions.length ? (
             <ActivityIndicator size="small" color={BrandColors.primary} />
           ) : (
-            <>
+            <View style={styles.transactionsCard}>
               {displayedTransactions.map((transaction, index) => (
                 <TransactionItem
                   key={transaction.id ?? index}
@@ -92,6 +92,7 @@ export default function HomeScreen() {
                   currencyId={transaction.currency_id}
                   type={transaction.type}
                   onPress={() => handleTransactionPress(transaction)}
+                  isLast={false}
                 />
               ))}
 
@@ -102,7 +103,7 @@ export default function HomeScreen() {
               >
                 <Text style={styles.seeAllText}>See all</Text>
               </TouchableOpacity>
-            </>
+            </View>
           )}
         </View>
       </ScrollView>
@@ -118,13 +119,19 @@ const styles = StyleSheet.create({
   logo: { width: 24, height: 24, backgroundColor: BrandColors.primary, borderRadius: 4 },
   actionButtons: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 24 },
   transactionsSection: { gap: 0 },
+  transactionsCard: {
+    backgroundColor: '#18181B',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
   // Add these styles back:
   seeAllButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#27272A',
   },
   seeAllText: {
     fontSize: 16,
