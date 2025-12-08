@@ -1,50 +1,124 @@
-# Welcome to your Expo app 👋
+# 💰 Wallet App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile wallet application built with **Expo** that allows users to view wallet balances, transaction history, and manage payouts.
 
-## Get started
+## Prerequisites
 
-1. Install dependencies
+Before running this project, ensure you have:
 
-   ```bash
-   npm install
-   ```
+- **Node.js** (v18 or higher)
+- **npm** or **yarn**
+- **Expo CLI** (optional, but recommended)
+- **iOS Simulator** (macOS only) or **Android Emulator**
+- **Expo Go** app on your physical device (alternative to emulators)
 
-2. Start the app
+## Getting Started
 
-   ```bash
-   npx expo start
-   ```
+### 1. Install Dependencies
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Install the main app dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Install the mock server dependencies:
 
-## Learn more
+```bash
+cd mock-server-main
+npm install
+cd ..
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 2. Start the Mock Server
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The app requires a backend API to function. A mock server is provided for development:
 
-## Join the community
+```bash
+cd mock-server-main
+npm start
+```
 
-Join our community of developers creating universal apps.
+The server will start on **port 3000** by default. You should see:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+Mock API server running on port 3000
+Available endpoints:
+  POST /auth/login - Login and get access token
+  GET /balances - Get wallet balances
+  GET /transactions - Get transactions with pagination
+  POST /payouts - Initiate withdrawal/payout
+  GET /health - Health check
+```
+
+> 💡 **Tip:** For development with auto-restart, use `npm run dev` instead.
+
+### 3. Run the Mobile App
+
+In a **new terminal window**, start the Expo development server:
+
+```bash
+npm start
+```
+
+This will open the Expo developer tools. Then choose your preferred method to run the app:
+
+| Platform | Command | Description |
+|----------|---------|-------------|
+| **iOS Simulator** | Press `i` | Requires Xcode on macOS |
+| **Android Emulator** | Press `a` | Requires Android Studio |
+| **Expo Go** | Scan QR code | Install Expo Go app on your device |
+| **Web** | Press `w` | Run in browser |
+
+Alternatively, run platform-specific commands:
+
+```bash
+# iOS (requires Xcode)
+npm run ios
+
+# Android (requires Android Studio)
+npm run android
+
+# Web
+npm run web
+```
+
+## Running Tests
+
+Run the test suite with:
+
+```bash
+npm test
+```
+
+Run tests in watch mode for development:
+
+```bash
+npm run test:watch
+```
+
+## Testing Error Handling
+
+To see the error alert controller in action, you can simulate a network error by changing the API port number.
+
+### How to Trigger the Error Alert:
+
+1. Open `services/api.ts`
+2. Change the `API_BASE_URL` port from `3000` to a different port (e.g., `3001`):
+
+```typescript
+// Change this:
+const API_BASE_URL = 'http://localhost:3000';
+
+// To this:
+const API_BASE_URL = 'http://localhost:3001';
+```
+
+3. Save the file and reload the app
+4. The app will fail to connect to the server, and you'll see an **error alert** with options to **Retry** or **Cancel**
+
+This demonstrates the app's built-in error handling with the `showErrorAlert` function that provides user-friendly error messages for various scenarios:
+- Network connection errors
+- Request timeouts
+- Server errors
+- Authentication errors
