@@ -3,134 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { CURRENCY_MAP, TransactionStatus, TransactionType } from '@/types';
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
-  return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
-};
-
-const getStatusColor = (status: TransactionStatus) => {
-  switch (status) {
-    case 'completed':
-      return '#22C55E';
-    case 'failed':
-      return '#EF4444';
-    case 'pending':
-    default:
-      return '#9CA3AF';
-  }
-};
-
-const getStatusText = (status: TransactionStatus) => {
-  switch (status) {
-    case 'completed':
-      return 'Completed';
-    case 'failed':
-      return 'Declined';
-    case 'pending':
-    default:
-      return 'Pending';
-  }
-};
-
-export default function TransactionDetailsScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
-    id: string;
-    wallet_id: string;
-    type: TransactionType;
-    status: TransactionStatus;
-    reason: string;
-    amount: string;
-    currency_id: string;
-    created_at: string;
-    payer_name?: string;
-    current_balance?: string;
-  }>();
-
-  const currency = CURRENCY_MAP[Number(params.currency_id)];
-  const amount = parseFloat(params.amount || '0');
-  const currencyCode = currency?.code ?? 'EUR';
-  const isIncome = params.type === 'top-up';
-
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Title */}
-      <Text style={styles.pageTitle}>Transaction details</Text>
-
-      {/* Content */}
-      <View style={styles.content}>
-        {/* Amount Card */}
-        <View style={styles.amountCard}>
-          <View style={styles.amountCardHeader}>
-            <Text style={styles.incomeLabel}>{isIncome ? 'Income' : 'Expense'}</Text>
-            <Ionicons name="document-text-outline" size={20} color="#6B7280" />
-          </View>
-          <Text style={styles.amount}>
-            {isIncome ? '+' : '-'}{Math.abs(amount).toFixed(2)} {currencyCode}
-          </Text>
-        </View>
-
-        {/* Details Card */}
-        <View style={styles.detailsCard}>
-          {/* Details List */}
-          <View style={styles.detailsList}>
-            <DetailRow 
-              label="Wallet" 
-              value={currencyCode}
-              showCurrencyIndicator
-            />
-            <DetailRow 
-              label="Transaction type" 
-              value={isIncome ? 'Income' : 'Expense'}
-            />
-            <DetailRow 
-              label="Payer name" 
-              value={params.payer_name || 'Admin'}
-            />
-            <DetailRow 
-              label="Status" 
-              value={getStatusText(params.status)}
-              valueColor={getStatusColor(params.status)}
-            />
-            <DetailRow 
-              label="Transaction number" 
-              value={`#${params.id || '00000000'}`}
-            />
-            <DetailRow 
-              label="Payment date" 
-              value={formatDate(params.created_at)}
-            />
-            <DetailRow 
-              label="Current balance" 
-              value={`${params.current_balance || '0.00'} ${currencyCode}`}
-            />
-          </View>
-
-          {/* Details Section */}
-          <View style={styles.detailsSection}>
-            <Text style={styles.detailsSectionTitle}>Details</Text>
-            <Text style={styles.detailsSectionContent}>{params.reason || 'Expense request'}</Text>
-          </View>
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-}
+import { CURRENCY_MAP, TransactionStatus, TransactionType, Transaction } from '@/types';
+import { formatDateWithTime, getStatusColor, getStatusText, buildTransactionParams } from '@/utils/transaction-helpers';
 
 const DetailRow = ({ 
   label, 
@@ -261,3 +135,95 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
+
+export default function TransactionDetailsScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{
+    id: string;
+    wallet_id: string;
+    type: TransactionType;
+    status: TransactionStatus;
+    reason: string;
+    amount: string;
+    currency_id: string;
+    created_at: string;
+    payer_name?: string;
+    current_balance?: string;
+  }>();
+
+  const currency = CURRENCY_MAP[Number(params.currency_id)];
+  const amount = parseFloat(params.amount || '0');
+  const currencyCode = currency?.code ?? 'EUR';
+  const isIncome = params.type === 'top-up';
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Title */}
+      <Text style={styles.pageTitle}>Transaction details</Text>
+
+      {/* Content */}
+      <View style={styles.content}>
+        {/* Amount Card */}
+        <View style={styles.amountCard}>
+          <View style={styles.amountCardHeader}>
+            <Text style={styles.incomeLabel}>{isIncome ? 'Income' : 'Expense'}</Text>
+            <Ionicons name="document-text-outline" size={20} color="#6B7280" />
+          </View>
+          <Text style={styles.amount}>
+            {isIncome ? '+' : '-'}{Math.abs(amount).toFixed(2)} {currencyCode}
+          </Text>
+        </View>
+
+        {/* Details Card */}
+        <View style={styles.detailsCard}>
+          {/* Details List */}
+          <View style={styles.detailsList}>
+            <DetailRow 
+              label="Wallet" 
+              value={currencyCode}
+              showCurrencyIndicator
+            />
+            <DetailRow 
+              label="Transaction type" 
+              value={isIncome ? 'Income' : 'Expense'}
+            />
+            <DetailRow 
+              label="Payer name" 
+              value={params.payer_name || 'Admin'}
+            />
+            <DetailRow 
+              label="Status" 
+              value={getStatusText(params.status)}
+              valueColor={getStatusColor(params.status)}
+            />
+            <DetailRow 
+              label="Transaction number" 
+              value={`#${params.id || '00000000'}`}
+            />
+            <DetailRow 
+              label="Payment date" 
+              value={formatDateWithTime(params.created_at)}
+            />
+            <DetailRow 
+              label="Current balance" 
+              value={`${params.current_balance || '0.00'} ${currencyCode}`}
+            />
+          </View>
+
+          {/* Details Section */}
+          <View style={styles.detailsSection}>
+            <Text style={styles.detailsSectionTitle}>Details</Text>
+            <Text style={styles.detailsSectionContent}>{params.reason || 'Expense request'}</Text>
+          </View>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}

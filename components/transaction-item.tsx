@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { BrandColors } from '@/constants/theme';
 import { CURRENCY_MAP, TransactionType } from '@/types';
+import { formatDate, formatAmount } from '@/utils/transaction-helpers';
 
 interface TransactionItemProps {
     reason: string;
@@ -14,21 +15,6 @@ interface TransactionItemProps {
 }
 
 export function TransactionItem({ reason, createdAt, amount, currencyId, type, onPress, isLast = false }: TransactionItemProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatAmount = () => {
-    const currency = CURRENCY_MAP[currencyId];
-    const prefix = type === 'top-up' ? '+' : '-';
-    return `${prefix}${Math.abs(amount).toFixed(2)} ${currency?.code ?? 'EUR'}`;
-  };
-
   const content = (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -40,7 +26,7 @@ export function TransactionItem({ reason, createdAt, amount, currencyId, type, o
         </View>
       </View>
       <Text style={[styles.amount, type === 'top-up' && styles.amountPositive]}>
-        {formatAmount()}
+        {formatAmount(amount, currencyId, type)}
       </Text>
       {!isLast && <View style={styles.divider} />}
     </View>

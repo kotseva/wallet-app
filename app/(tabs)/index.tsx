@@ -12,6 +12,7 @@ import { TransactionItem } from '@/components/transaction-item';
 import { CardPromoBanner } from '@/components/card-promo-banner';
 import { LoadingScreen } from '@/components/loading-screen';
 import { showErrorAlert } from '@/services/api';
+import { formatDate, formatAmount, getMonthYear, getStatusColor, getStatusText, buildTransactionParams } from '@/utils/transaction-helpers';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -53,16 +54,7 @@ export default function HomeScreen() {
   const handleTransactionPress = (transaction: typeof displayedTransactions[0]) => {
     router.push({
       pathname: '/transaction-details',
-      params: {
-        id: transaction.id?.toString() ?? '',
-        wallet_id: transaction.wallet_id.toString(),
-        type: transaction.type,
-        status: transaction.status,
-        reason: transaction.reason,
-        amount: transaction.amount.toString(),
-        currency_id: transaction.currency_id.toString(),
-        created_at: transaction.created_at,
-      }
+      params: buildTransactionParams(transaction),
     });
   };
 

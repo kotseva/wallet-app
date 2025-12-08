@@ -5,57 +5,16 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/hooks/use-transactions';
 import { BrandColors } from '@/constants/theme';
-import { CURRENCY_MAP, Transaction, TransactionStatus } from '@/types';
+import { Transaction } from '@/types';
 import { showErrorAlert } from '@/services/api';
-
-// Helper to format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-};
-
-// Helper to format amount
-const formatAmount = (amount: number, currencyId: number, type: string) => {
-  const currency = CURRENCY_MAP[currencyId];
-  const prefix = type === 'top-up' ? '+' : '-';
-  return `${prefix}${Math.abs(amount).toFixed(2)} ${currency?.code ?? 'EUR'}`;
-};
-
-// Helper to get month-year string
-const getMonthYear = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-};
-
-// Status color helper
-const getStatusColor = (status: TransactionStatus) => {
-  switch (status) {
-    case 'completed':
-      return '#22C55E'; // green
-    case 'failed':
-      return '#EF4444'; // red
-    case 'pending':
-    default:
-      return '#9CA3AF'; // gray
-  }
-};
-
-// Status display text
-const getStatusText = (status: TransactionStatus) => {
-  switch (status) {
-    case 'completed':
-      return 'Completed';
-    case 'failed':
-      return 'Declined';
-    case 'pending':
-    default:
-      return 'Pending';
-  }
-};
+import { 
+  formatDate, 
+  formatAmount, 
+  getMonthYear, 
+  getStatusColor, 
+  getStatusText,
+  buildTransactionParams 
+} from '@/utils/transaction-helpers';
 
 interface TransactionSection {
   title: string;
@@ -117,16 +76,7 @@ export default function TransactionsScreen() {
       <TouchableOpacity 
         onPress={() => router.push({
           pathname: '/transaction-details',
-          params: {
-            id: item.id?.toString() ?? '',
-            wallet_id: item.wallet_id.toString(),
-            type: item.type,
-            status: item.status,
-            reason: item.reason,
-            amount: item.amount.toString(),
-            currency_id: item.currency_id.toString(),
-            created_at: item.created_at,
-          }
+          params: buildTransactionParams(item)
         })}
         activeOpacity={0.7}
       >
