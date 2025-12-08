@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { View, Text, StyleSheet, SectionList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTransactions } from '@/hooks/use-transactions';
 import { BrandColors } from '@/constants/theme';
 import { CURRENCY_MAP, Transaction, TransactionStatus } from '@/types';
+import { showErrorAlert } from '@/services/api';
 
 // Helper to format date
 const formatDate = (dateString: string) => {
@@ -66,10 +67,22 @@ export default function TransactionsScreen() {
   const {
     transactions,
     isLoading,
+    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useTransactions();
+
+  // Show alert when error occurs
+  useEffect(() => {
+    if (error) {
+      showErrorAlert(error, {
+        title: 'Failed to load transactions',
+        onRetry: () => refetch(),
+      });
+    }
+  }, [error]);
 
   // Group transactions by month
   const sections: TransactionSection[] = useMemo(() => {

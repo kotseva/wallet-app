@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -11,13 +11,34 @@ import { BalanceDisplay } from '@/components/balance-display';
 import { TransactionItem } from '@/components/transaction-item';
 import { CardPromoBanner } from '@/components/card-promo-banner';
 import { LoadingScreen } from '@/components/loading-screen';
+import { showErrorAlert } from '@/services/api';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { isAuthenticated, tokens } = useAuthStore();
-  const { wallets, isLoading: walletsLoading, refetch: refetchWallets } = useWallets();
-  const { transactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useTransactions();
+  const { wallets, isLoading: walletsLoading, error: walletsError, refetch: refetchWallets } = useWallets();
+  const { transactions, isLoading: transactionsLoading, error: transactionsError, refetch: refetchTransactions } = useTransactions();
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Show alert when wallet error occurs
+  useEffect(() => {
+    if (walletsError) {
+      showErrorAlert(walletsError, {
+        title: 'Failed to load wallets',
+        onRetry: () => refetchWallets(),
+      });
+    }
+  }, [walletsError]);
+
+  // Show alert when transactions error occurs
+  useEffect(() => {
+    if (transactionsError) {
+      showErrorAlert(transactionsError, {
+        title: 'Failed to load transactions',
+        onRetry: () => refetchTransactions(),
+      });
+    }
+  }, [transactionsError]);
 
   const eurWallet = wallets?.find((w) => w.currency_id === 1);
   const balance = eurWallet?.available_balance ?? '0.00';
