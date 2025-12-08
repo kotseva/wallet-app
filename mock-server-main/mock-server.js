@@ -91,6 +91,24 @@ const mockTransactions = [
     amount: 750.00,
     currency_id: 9,
     created_at: "2024-01-11T11:30:00Z"
+  },
+  {
+    wallet_id: 3,
+    type: "top-up",
+    status: "completed",
+    reason: "Investment return",
+    amount: 750.00,
+    currency_id: 9,
+    created_at: "2023-01-11T11:30:00Z"
+  },
+  {
+    wallet_id: 3,
+    type: "top-up",
+    status: "failed",
+    reason: "Airbnb payment",
+    amount: 120.00,
+    currency_id: 9,
+    created_at: "2023-03-11T11:30:00Z"
   }
 ];
 
