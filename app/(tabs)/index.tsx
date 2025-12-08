@@ -29,6 +29,22 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const handleTransactionPress = (transaction: typeof displayedTransactions[0]) => {
+    router.push({
+      pathname: '/transaction-details',
+      params: {
+        id: transaction.id?.toString() ?? '',
+        wallet_id: transaction.wallet_id.toString(),
+        type: transaction.type,
+        status: transaction.status,
+        reason: transaction.reason,
+        amount: transaction.amount.toString(),
+        currency_id: transaction.currency_id.toString(),
+        created_at: transaction.created_at,
+      }
+    });
+  };
+
   if (walletsLoading && !wallets?.length) {
     return <LoadingScreen />;
   }
@@ -75,6 +91,7 @@ export default function HomeScreen() {
                   amount={transaction.amount}
                   currencyId={transaction.currency_id}
                   type={transaction.type}
+                  onPress={() => handleTransactionPress(transaction)}
                 />
               ))}
 

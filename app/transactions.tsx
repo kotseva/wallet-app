@@ -101,29 +101,46 @@ export default function TransactionsScreen() {
     const isLast = index === section.data.length - 1;
     
     return (
-      <View style={[
-        styles.transactionItem,
-        isFirst && styles.transactionItemFirst,
-        isLast && styles.transactionItemLast,
-      ]}>
-        <View style={styles.transactionLeft}>
-          <View>
-            <Text style={styles.transactionName} numberOfLines={1}>
-              {item.reason || 'Transaction na...'}
-            </Text>
-            <Text style={styles.transactionDate}>{formatDate(item.created_at)}</Text>
+      <TouchableOpacity 
+        onPress={() => router.push({
+          pathname: '/transaction-details',
+          params: {
+            id: item.id?.toString() ?? '',
+            wallet_id: item.wallet_id.toString(),
+            type: item.type,
+            status: item.status,
+            reason: item.reason,
+            amount: item.amount.toString(),
+            currency_id: item.currency_id.toString(),
+            created_at: item.created_at,
+          }
+        })}
+        activeOpacity={0.7}
+      >
+        <View style={[
+          styles.transactionItem,
+          isFirst && styles.transactionItemFirst,
+          isLast && styles.transactionItemLast,
+        ]}>
+          <View style={styles.transactionLeft}>
+            <View>
+              <Text style={styles.transactionName} numberOfLines={1}>
+                {item.reason || 'Transaction na...'}
+              </Text>
+              <Text style={styles.transactionDate}>{formatDate(item.created_at)}</Text>
+            </View>
           </View>
+          <View style={styles.transactionRight}>
+            <Text style={styles.transactionAmount}>
+              {formatAmount(item.amount, item.currency_id, item.type)}
+            </Text>
+            <Text style={[styles.transactionStatus, { color: getStatusColor(item.status) }]}>
+              {getStatusText(item.status)}
+            </Text>
+          </View>
+          {!isLast && <View style={styles.divider} />}
         </View>
-        <View style={styles.transactionRight}>
-          <Text style={styles.transactionAmount}>
-            {formatAmount(item.amount, item.currency_id, item.type)}
-          </Text>
-          <Text style={[styles.transactionStatus, { color: getStatusColor(item.status) }]}>
-            {getStatusText(item.status)}
-          </Text>
-        </View>
-        {!isLast && <View style={styles.divider} />}
-      </View>
+      </TouchableOpacity>
     );
   };
 

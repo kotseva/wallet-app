@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { BrandColors } from '@/constants/theme';
 import { CURRENCY_MAP, TransactionType } from '@/types';
 
@@ -9,9 +9,10 @@ interface TransactionItemProps {
     amount: number;
     currencyId: number;
     type: TransactionType;
+    onPress?: () => void;
 }
 
-export function TransactionItem({ reason, createdAt, amount, currencyId, type }: TransactionItemProps) {
+export function TransactionItem({ reason, createdAt, amount, currencyId, type, onPress }: TransactionItemProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
@@ -27,10 +28,9 @@ export function TransactionItem({ reason, createdAt, amount, currencyId, type }:
     return `${prefix}${Math.abs(amount).toFixed(2)} ${currency?.code ?? 'EUR'}`;
   };
 
-  return (
+  const content = (
     <View style={styles.container}>
       <View style={styles.left}>
-        <View style={styles.dot} />
         <View>
           <Text style={styles.name} numberOfLines={1}>
             {reason || 'Transaction'}
@@ -43,6 +43,16 @@ export function TransactionItem({ reason, createdAt, amount, currencyId, type }:
       </Text>
     </View>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
 }
 
 const styles = StyleSheet.create({
@@ -50,38 +60,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222222',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: BrandColors.surface,
+    borderRadius: 8,
+    marginBottom: 5,
   },
   left: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: BrandColors.primary,
   },
   name: {
     fontSize: 16,
-    color: '#FFFFFF',
-    maxWidth: 160,
+    fontWeight: 'bold',
+    color: BrandColors.textSecondary,
   },
   date: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: BrandColors.textSecondary,
     marginTop: 2,
   },
   amount: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF',
+    fontWeight: 'bold',
+    color: BrandColors.textPrimary,
   },
   amountPositive: {
-    color: '#22C55E',
+    color: BrandColors.success,
   },
 });
