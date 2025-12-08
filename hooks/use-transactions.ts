@@ -14,7 +14,7 @@ export function useTransactions(params?: Omit<TransactionsParams, 'page'>) {
     getNextPageParam: (lastPage) => 
       lastPage.data.has_more ? lastPage.data.current_page + 1 : undefined,
     initialPageParam: 1,
-    staleTime: 0,//1000 * 60 * 5, // 5 minutes
+    staleTime: 0,
   });
 
   // Cache transactions when successfully fetched

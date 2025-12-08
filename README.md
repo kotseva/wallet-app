@@ -12,6 +12,12 @@ Before running this project, ensure you have:
 - **iOS Simulator** (macOS only) or **Android Emulator**
 - **Expo Go** app on your physical device (alternative to emulators)
 
+## Screenshots
+
+| Home | Transactions | Transaction Details |
+|:---:|:---:|:---:|
+| <img src="assets/screenshots/Home.png" width="200"> | <img src="assets/screenshots/Transactions.png" width="200"> | <img src="assets/screenshots/TransactionDetails.png" width="200"> |
+
 ## Getting Started
 
 ### 1. Install Dependencies
