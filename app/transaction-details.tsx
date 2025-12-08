@@ -4,17 +4,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { CURRENCY_MAP, TransactionStatus, TransactionType } from '@/types';
-import { BrandColors } from '@/constants/theme';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
+  return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
 };
 
 const getStatusColor = (status: TransactionStatus) => {
@@ -41,14 +40,6 @@ const getStatusText = (status: TransactionStatus) => {
   }
 };
 
-const getTypeIcon = (type: TransactionType) => {
-  return type === 'top-up' ? 'arrow-down-circle' : 'arrow-up-circle';
-};
-
-const getTypeColor = (type: TransactionType) => {
-  return type === 'top-up' ? '#22C55E' : '#EF4444';
-};
-
 export default function TransactionDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -60,59 +51,110 @@ export default function TransactionDetailsScreen() {
     amount: string;
     currency_id: string;
     created_at: string;
+    payer_name?: string;
+    current_balance?: string;
   }>();
 
   const currency = CURRENCY_MAP[Number(params.currency_id)];
   const amount = parseFloat(params.amount || '0');
-  const prefix = params.type === 'top-up' ? '+' : '-';
+  const currencyCode = currency?.code ?? 'EUR';
+  const isIncome = params.type === 'top-up';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transaction Details</Text>
-        <View style={styles.headerButton} />
       </View>
+
+      {/* Title */}
+      <Text style={styles.pageTitle}>Transaction details</Text>
 
       {/* Content */}
       <View style={styles.content}>
-        {/* Amount Section */}
-        <View style={styles.amountSection}>
-          <Ionicons 
-            name={getTypeIcon(params.type)} 
-            size={48} 
-            color={getTypeColor(params.type)} 
-          />
-          <Text style={[styles.amount, { color: getTypeColor(params.type) }]}>
-            {prefix}{Math.abs(amount).toFixed(2)} {currency?.code ?? 'EUR'}
-          </Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(params.status) + '20' }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(params.status) }]}>
-              {getStatusText(params.status)}
-            </Text>
+        {/* Amount Card */}
+        <View style={styles.amountCard}>
+          <View style={styles.amountCardHeader}>
+            <Text style={styles.incomeLabel}>{isIncome ? 'Income' : 'Expense'}</Text>
+            <Ionicons name="document-text-outline" size={20} color="#6B7280" />
           </View>
+          <Text style={styles.amount}>
+            {isIncome ? '+' : '-'}{Math.abs(amount).toFixed(2)} {currencyCode}
+          </Text>
         </View>
 
         {/* Details Card */}
         <View style={styles.detailsCard}>
-          <DetailRow label="Transaction ID" value={params.id || 'N/A'} />
-          <DetailRow label="Type" value={params.type === 'top-up' ? 'Top Up' : 'Withdrawal'} />
-          <DetailRow label="Description" value={params.reason || 'No description'} />
-          <DetailRow label="Date" value={formatDate(params.created_at)} />
-          <DetailRow label="Wallet ID" value={params.wallet_id} isLast />
+          {/* Details List */}
+          <View style={styles.detailsList}>
+            <DetailRow 
+              label="Wallet" 
+              value={currencyCode}
+              showCurrencyIndicator
+            />
+            <DetailRow 
+              label="Transaction type" 
+              value={isIncome ? 'Income' : 'Expense'}
+            />
+            <DetailRow 
+              label="Payer name" 
+              value={params.payer_name || 'Admin'}
+            />
+            <DetailRow 
+              label="Status" 
+              value={getStatusText(params.status)}
+              valueColor={getStatusColor(params.status)}
+            />
+            <DetailRow 
+              label="Transaction number" 
+              value={`#${params.id || '00000000'}`}
+            />
+            <DetailRow 
+              label="Payment date" 
+              value={formatDate(params.created_at)}
+            />
+            <DetailRow 
+              label="Current balance" 
+              value={`${params.current_balance || '0.00'} ${currencyCode}`}
+            />
+          </View>
+
+          {/* Details Section */}
+          <View style={styles.detailsSection}>
+            <Text style={styles.detailsSectionTitle}>Details</Text>
+            <Text style={styles.detailsSectionContent}>{params.reason || 'Expense request'}</Text>
+          </View>
         </View>
       </View>
     </SafeAreaView>
   );
 }
 
-const DetailRow = ({ label, value, isLast }: { label: string; value: string; isLast?: boolean }) => (
-  <View style={[styles.detailRow, !isLast && styles.detailRowBorder]}>
+const DetailRow = ({ 
+  label, 
+  value, 
+  valueColor,
+  showCurrencyIndicator 
+}: { 
+  label: string; 
+  value: string; 
+  valueColor?: string;
+  showCurrencyIndicator?: boolean;
+}) => (
+  <View style={styles.detailRow}>
     <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
+    <View style={styles.detailValueContainer}>
+      {showCurrencyIndicator && (
+        <View style={styles.currencyIndicator}>
+          <Text style={styles.currencyIndicatorText}>€</Text>
+        </View>
+      )}
+      <Text style={[styles.detailValue, valueColor && { color: valueColor }]}>
+        {value}
+      </Text>
+    </View>
   </View>
 );
 
@@ -122,69 +164,100 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
-  headerButton: {
+  backButton: {
     padding: 8,
-    width: 40,
+    marginLeft: -8,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#fff',
+    paddingHorizontal: 24,
+    marginTop: 8,
+    marginBottom: 24,
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
   },
-  amountSection: {
+  amountCard: {
+    backgroundColor: '#18181B',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  amountCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 32,
+    marginBottom: 8,
+  },
+  incomeLabel: {
+    fontSize: 14,
+    color: '#9CA3AF',
   },
   amount: {
-    fontSize: 36,
+    fontSize: 24,
     fontWeight: '700',
-    marginTop: 16,
-    marginBottom: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#22C55E',
   },
   detailsCard: {
     backgroundColor: '#18181B',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
+  },
+  detailsList: {
+    marginBottom: 24,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
-  },
-  detailRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#27272A',
+    paddingVertical: 12,
   },
   detailLabel: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#6B7280',
+  },
+  detailValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   detailValue: {
     fontSize: 14,
     color: '#fff',
     fontWeight: '500',
-    textAlign: 'right',
-    flex: 1,
-    marginLeft: 16,
+  },
+  currencyIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#2563EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currencyIndicatorText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  detailsSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#27272A',
+    paddingTop: 16,
+    marginTop: 4,
+  },
+  detailsSectionTitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  detailsSectionContent: {
+    fontSize: 14,
+    color: '#fff',
   },
 });
