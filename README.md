@@ -61,15 +61,6 @@ In a **new terminal window**, start the Expo development server:
 npm start
 ```
 
-This will open the Expo developer tools. Then choose your preferred method to run the app:
-
-| Platform | Command | Description |
-|----------|---------|-------------|
-| **iOS Simulator** | Press `i` | Requires Xcode on macOS |
-| **Android Emulator** | Press `a` | Requires Android Studio |
-| **Expo Go** | Scan QR code | Install Expo Go app on your device |
-| **Web** | Press `w` | Run in browser |
-
 Alternatively, run platform-specific commands:
 
 ```bash
