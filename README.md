@@ -2,16 +2,6 @@
 
 A React Native mobile wallet application built with **Expo** that allows users to view wallet balances, transaction history, and manage payouts.
 
-## Prerequisites
-
-Before running this project, ensure you have:
-
-- **Node.js** (v18 or higher)
-- **npm** or **yarn**
-- **Expo CLI** (optional, but recommended)
-- **iOS Simulator** (macOS only) or **Android Emulator**
-- **Expo Go** app on your physical device (alternative to emulators)
-
 ## Screenshots
 
 | Home | Transactions | Transaction Details |
